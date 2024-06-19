@@ -97,17 +97,7 @@ function onSearchAddress(ev) {
         })
 }
 
-
-
-
-
-function AddModalListeners() {
-    document.querySelector('.add-location-form')
-}
-
-
 function onAddLoc(geo) {
-
     // modal
     const elModal = document.querySelector('.modal')
     elModal.showModal();
@@ -119,91 +109,48 @@ function onAddLoc(geo) {
     var locName
     var rate
 
+    const prm = new Promise((resolve, _) => {
+        elForm.addEventListener('submit',
+            function onSubmitAddLocationForm(event) {
+                event.preventDefault()
+                event.stopPropagation()
+                this.setAttribute('hidden', true)
+                // buttons
+                const ellocName = document.querySelector('.loc-name-input')
+                const elRate = document.querySelector('.loc-rate-input')
 
-    function onSubmitAddLocationForm(event) {
-        event.preventDefault()
-        event.stopPropagation()
-        this.setAttribute('hidden', true)
-        // buttons
-        const ellocName = document.querySelector('.loc-name-input')
-        const elRate = document.querySelector('.loc-rate-input')
+                locName = ellocName.value
+                rate = elRate.value
 
-        locName = ellocName.value
-        rate = elRate.value
+                ellocName.value = ''
+                elRate.value = ''
 
-        ellocName.value = ''
-        elRate.value = ''
+                elModal.close()
 
-        elModal.close()
-        
-        
-        const loc = {
-            name: locName,
-            rate,
-            geo
-        }
-    
-        locService.save(loc)
-            .then((savedLoc) => {
-                flashMsg(`Added Location (id: ${savedLoc.id})`)
-                utilService.updateQueryParams({ locId: savedLoc.id })
-                loadAndRenderLocs()
-            })
-            .catch(err => {
-                console.error('OOPs:', err)
-                flashMsg('Cannot add location')
-            })
-    }
-    elForm.addEventListener('submit', onSubmitAddLocationForm)
+                resolve({
+                    name: locName,
+                    rate,
+                    geo
+                })
+            });
+    })
 
-    //  const locName = prompt('Loc name', geo.address || 'Just a place')
-
-    // console.log('locname', locName)
-    // if (!locName) return
-
-    // const loc = {
-    //     name: locName,
-    //     rate,
-    //     geo
-    // }
-
-    // locService.save(loc)
-    //     .then((savedLoc) => {
-    //         flashMsg(`Added Location (id: ${savedLoc.id})`)
-    //         utilService.updateQueryParams({ locId: savedLoc.id })
-    //         loadAndRenderLocs()
-    //     })
-    //     .catch(err => {
-    //         console.error('OOPs:', err)
-    //         flashMsg('Cannot add location')
-    //     })
+    prm.then(loc => locService.save(loc)
+        .then((savedLoc) => {
+            flashMsg(`Added Location (id: ${savedLoc.id})`)
+            utilService.updateQueryParams({ locId: savedLoc.id })
+            loadAndRenderLocs()
+        })
+        .catch(err => {
+            console.error('OOPs:', err)
+            flashMsg('Cannot add location')
+        }))
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function loadAndRenderLocs() {
-    console.log('gfdss')
     locService.query()
         .then(renderLocs)
         .catch(err => {
-            console.error('OOPs:', err)
             flashMsg('Cannot load locations')
         })
 }
