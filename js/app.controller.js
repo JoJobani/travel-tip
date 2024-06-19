@@ -102,7 +102,7 @@ function onAddLoc(geo) {
     const elModal = document.querySelector('.modal')
     elModal.showModal();
 
-    // forms
+    // form
     const elForm = document.querySelector('.add-location-form')
     elForm.removeAttribute('hidden')
 
@@ -113,7 +113,6 @@ function onAddLoc(geo) {
         elForm.addEventListener('submit',
             function onSubmitAddLocationForm(event) {
                 event.preventDefault()
-                event.stopPropagation()
                 this.setAttribute('hidden', true)
                 // buttons
                 const ellocName = document.querySelector('.loc-name-input')
@@ -172,19 +171,43 @@ function onPanToUserPos() {
 function onUpdateLoc(locId) {
     locService.getById(locId)
         .then(loc => {
-            const rate = prompt('New rate?', loc.rate)
-            if (rate !== loc.rate) {
-                loc.rate = rate
-                locService.save(loc)
-                    .then(savedLoc => {
-                        flashMsg(`Rate was set to: ${savedLoc.rate}`)
-                        loadAndRenderLocs()
-                    })
-                    .catch(err => {
-                        console.error('OOPs:', err)
-                        flashMsg('Cannot update location')
-                    })
+            // modal
+            const elModal = document.querySelector('.modal')
+            elModal.showModal();
+
+            // form
+            const elForm = document.querySelector('.update-rating-form')
+            elForm.removeAttribute('hidden')
+
+            const prm = new Promise((resolve, _) => {
+                elForm.addEventListener('submit',
+                    function onSubmitAddLocationForm(event) {
+                        event.preventDefault()
+                        this.setAttribute('hidden', true)
+                        // button
+                        const elRate = document.querySelector('.new-loc-rate-input')
+                        const rate = elRate.value
+                        elRate.value = ''
+                        elModal.close()
+
+                        resolve(rate)
+                    });
             }
+            )
+            prm.then(rate => {
+                if (rate !== loc.rate) {
+                    loc.rate = rate
+                    locService.save(loc)
+                        .then(savedLoc => {
+                            flashMsg(`Rate was set to: ${savedLoc.rate}`)
+                            loadAndRenderLocs()
+                        })
+                        .catch(err => {
+                            console.error('OOPs:', err)
+                            flashMsg('Cannot update location')
+                        })
+                }
+            })
         })
 }
 
@@ -210,7 +233,6 @@ function displayLoc(loc) {
     el.querySelector('.loc-rate').innerHTML = '★'.repeat(loc.rate)
     el.querySelector('[name=loc-copier]').value = window.location
     el.classList.add('show')
-
     utilService.updateQueryParams({ locId: loc.id })
 }
 
