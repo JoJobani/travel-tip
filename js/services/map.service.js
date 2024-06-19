@@ -45,7 +45,7 @@ function lookupAddressGeo(geoOrAddress) {
             // console.log('RES IS', res)
             if (!res.results.length) return new Error('Found nothing')
             res = res.results[0]
-            const {formatted_address, geometry} = res
+            const { formatted_address, geometry } = res
 
             const geo = {
                 address: formatted_address.substring(formatted_address.indexOf(' ')).trim(),

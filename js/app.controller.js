@@ -30,9 +30,12 @@ function onInit() {
             console.error('OOPs:', err)
             flashMsg('Cannot init map')
         })
+    AddModalListeners()
 }
 
 function renderLocs(locs) {
+    console.log('im here')
+
     const selectedLocId = getLocIdFromQueryParams()
 
     var strHTML = locs.map(loc => {
@@ -94,28 +97,109 @@ function onSearchAddress(ev) {
         })
 }
 
-function onAddLoc(geo) {
-    const locName = prompt('Loc name', geo.address || 'Just a place')
-    if (!locName) return
 
-    const loc = {
-        name: locName,
-        rate: +prompt(`Rate (1-5)`, '3'),
-        geo
-    }
-    locService.save(loc)
-        .then((savedLoc) => {
-            flashMsg(`Added Location (id: ${savedLoc.id})`)
-            utilService.updateQueryParams({ locId: savedLoc.id })
-            loadAndRenderLocs()
-        })
-        .catch(err => {
-            console.error('OOPs:', err)
-            flashMsg('Cannot add location')
-        })
+
+
+
+function AddModalListeners() {
+    document.querySelector('.add-location-form')
 }
 
+
+function onAddLoc(geo) {
+
+    // modal
+    const elModal = document.querySelector('.modal')
+    elModal.showModal();
+
+    // forms
+    const elForm = document.querySelector('.add-location-form')
+    elForm.removeAttribute('hidden')
+
+    var locName
+    var rate
+
+
+    function onSubmitAddLocationForm(event) {
+        event.preventDefault()
+        event.stopPropagation()
+        this.setAttribute('hidden', true)
+        // buttons
+        const ellocName = document.querySelector('.loc-name-input')
+        const elRate = document.querySelector('.loc-rate-input')
+
+        locName = ellocName.value
+        rate = elRate.value
+
+        ellocName.value = ''
+        elRate.value = ''
+
+        elModal.close()
+        
+        
+        const loc = {
+            name: locName,
+            rate,
+            geo
+        }
+    
+        locService.save(loc)
+            .then((savedLoc) => {
+                flashMsg(`Added Location (id: ${savedLoc.id})`)
+                utilService.updateQueryParams({ locId: savedLoc.id })
+                loadAndRenderLocs()
+            })
+            .catch(err => {
+                console.error('OOPs:', err)
+                flashMsg('Cannot add location')
+            })
+    }
+    elForm.addEventListener('submit', onSubmitAddLocationForm)
+
+    //  const locName = prompt('Loc name', geo.address || 'Just a place')
+
+    // console.log('locname', locName)
+    // if (!locName) return
+
+    // const loc = {
+    //     name: locName,
+    //     rate,
+    //     geo
+    // }
+
+    // locService.save(loc)
+    //     .then((savedLoc) => {
+    //         flashMsg(`Added Location (id: ${savedLoc.id})`)
+    //         utilService.updateQueryParams({ locId: savedLoc.id })
+    //         loadAndRenderLocs()
+    //     })
+    //     .catch(err => {
+    //         console.error('OOPs:', err)
+    //         flashMsg('Cannot add location')
+    //     })
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function loadAndRenderLocs() {
+    console.log('gfdss')
     locService.query()
         .then(renderLocs)
         .catch(err => {
@@ -153,7 +237,6 @@ function onUpdateLoc(locId) {
                         console.error('OOPs:', err)
                         flashMsg('Cannot update location')
                     })
-
             }
         })
 }
@@ -223,7 +306,7 @@ function getFilterByFromQueryParams() {
     const queryParams = new URLSearchParams(window.location.search)
     const txt = queryParams.get('txt') || ''
     const minRate = queryParams.get('minRate') || 0
-    locService.setFilterBy({txt, minRate})
+    locService.setFilterBy({ txt, minRate })
 
     document.querySelector('input[name="filter-by-txt"]').value = txt
     document.querySelector('input[name="filter-by-rate"]').value = minRate
@@ -267,6 +350,7 @@ function renderLocStats() {
         handleStats(stats, 'loc-update-rate')
     })
 }
+
 
 function handleStats(stats, selector) {
     // stats = { low: 37, medium: 11, high: 100, total: 148 }
