@@ -30,7 +30,6 @@ function onInit() {
             console.error('OOPs:', err)
             flashMsg('Cannot init map')
         })
-    AddModalListeners()
 }
 
 function renderLocs(locs) {
